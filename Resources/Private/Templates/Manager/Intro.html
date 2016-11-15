@@ -1,0 +1,63 @@
+
+<f:layout name="Backend/Simple" />
+
+
+<f:section name="content">
+	<h1>
+		Template Maker
+	</h1>
+	<p>Geben Sie den Namen Ihrer gewünschten Template-Extension ein.<br />
+		Es wird die demotemplate-Extension kopiert und umbenannt.<br /></p>
+
+	<f:form method="post" action="rename">
+		<input type="hidden" name="M" value="tools_TemplatemakerTxTemplatemakerM1">
+		<input type="hidden" name="moduleToken" value="{moduleToken}">
+
+		<div class="settings">
+			<div class="row">
+				<div class="col-sm-7 form-horizontal">
+					<div class="form-group">
+						<label for="title" class="col-sm-4 control-label">
+							Titel
+						</label>
+
+						<div class="col-sm-8">
+							<f:form.textfield name="title" id="title" class="form-control" placeholder="Neues Template" value="" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="key" class="col-sm-4 control-label">
+							Extension Key
+						</label>
+
+						<div class="col-sm-8">
+							<f:form.textfield name="key" id="key" class="form-control" value="" placeholder="templatekey" />
+							<p class="help-block" >Keine Leerzeichen, keine Bindestriche, Keine Großbuchstaben.</p>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-4 col-sm-8">
+
+							<div class="checkbox">
+								<label>
+									<f:form.checkbox name="pagelayouts" id="pagelayouts" class="" value="1" /> Automatische Umstellung der Seitenlayouts
+								</label>
+							</div>
+
+						</div>
+					</div>
+
+
+					<div class="form-group">
+						<div class="col-sm-offset-4 col-sm-8">
+							<f:form.submit value="Erzeugen" class="btn btn-primary" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</f:form>
+
+
+</f:section>

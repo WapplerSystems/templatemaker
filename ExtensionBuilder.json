@@ -1,0 +1,48 @@
+{
+    "modules": [],
+    "properties": {
+        "backendModules": [
+            {
+                "actions": {
+                    "controllerActionCombinations": "Manager => show"
+                },
+                "description": "Creates a template by copying demotemplate",
+                "key": "ba1",
+                "mainModule": "tools",
+                "name": "Template Maker",
+                "tabLabel": "Template Maker"
+            }
+        ],
+        "description": "",
+        "emConf": {
+            "category": "plugin",
+            "custom_category": "",
+            "dependsOn": "typo3 => 6.2.0-6.2.99\n",
+            "disableLocalization": false,
+            "disableVersioning": false,
+            "skipGenerateDocumentationTemplate": false,
+            "sourceLanguage": "en",
+            "state": "alpha",
+            "version": ""
+        },
+        "extensionKey": "templatemaker",
+        "name": "Template Maker",
+        "originalExtensionKey": "",
+        "persons": [
+            {
+                "company": "WapplerSystems",
+                "email": "typo3@wappler.systems",
+                "name": "Sven Wappler",
+                "role": "Developer"
+            }
+        ],
+        "plugins": [],
+        "vendorName": "WapplerSystems"
+    },
+    "wires": [],
+    "log": {
+        "last_modified": "2016-02-19 09:30",
+        "extension_builder_version": "6.2",
+        "be_user": "Sven Wappler (1)"
+    }
+}
