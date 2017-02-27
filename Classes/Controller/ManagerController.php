@@ -11,10 +11,9 @@ namespace WapplerSystems\Templatemaker\Controller;
 
 use TYPO3\CMS\Backend\Utility\BackendUtility as BackendUtilityCore;
 use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
-use TYPO3\CMS\Core\Package\PackageManager;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
+use TYPO3\CMS\Extbase\Mvc\Exception;
+use TYPO3\CMS\Extensionmanager\Utility\InstallUtility;
 
 
 class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
@@ -45,7 +44,7 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
      */
     public function initializeAction()
     {
-        $this->pageUid = (int)\TYPO3\CMS\Core\Utility\GeneralUtility::_GET('id');
+        $this->pageUid = (int)GeneralUtility::_GET('id');
         $this->setTsConfig();
         parent::initializeAction();
     }
@@ -64,7 +63,6 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
 
 
     /**
-     * @param string $name
      */
     public function renameAction() {
 
@@ -72,32 +70,33 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
 
         try {
 
-            /** @var \TYPO3\CMS\Extensionmanager\Utility\InstallUtility $service */
-            $service = $this->objectManager->get(\TYPO3\CMS\Extensionmanager\Utility\InstallUtility::class);
+            /** @var InstallUtility $service */
+            $service = $this->objectManager->get(InstallUtility::class);
 
             $title = $this->request->getArgument('title');
 
-            $name = $this->request->getArgument('key');
-            $extName = strtolower(str_replace(array("-", " "), array("", ""), trim($name)));
+            $extKey = trim($this->request->getArgument('key'));
 
-            $varName = str_replace("_","",$extName);
+            $camelCase = GeneralUtility::underscoredToUpperCamelCase($extKey);
+
+            $varName = str_replace('_','',$extKey);
 
 
-            if ($service->isLoaded($extName)) {
-                throw new \Exception("Die Extension " . $extName . " existiert bereits und ist geladen.");
+            if ($service->isLoaded($extKey)) {
+                throw new Exception('Die Extension ' . $extKey . ' existiert bereits und ist geladen.');
             }
 
-            $extPath = PATH_site . "typo3conf/ext/" . $extName . "/";
+            $extPath = PATH_site . 'typo3conf/ext/' . $extKey . '/';
 
             GeneralUtility::rmdir($extPath);
 
             if (!is_dir($extPath)) {
                 GeneralUtility::mkdir($extPath);
-                GeneralUtility::copyDirectory(PATH_site . "typo3conf/ext/demotemplate/", $extPath);
+                GeneralUtility::copyDirectory(PATH_site . 'typo3conf/ext/demotemplate/', $extPath);
             }
 
             if (!is_dir($extPath)) {
-                throw new \Exception("Verzeichnis " . $extPath . " konnte nicht erstellt werden.");
+                throw new Exception('Verzeichnis ' . $extPath . ' konnte nicht erstellt werden.');
             }
 
             $files = GeneralUtility::getAllFilesAndFoldersInPath([], $extPath);
@@ -105,26 +104,24 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
             foreach ($files as $file) {
 
                 $str = file_get_contents($file);
-                $str = str_replace("demotemplate", $varName, $str);
+                $str = str_replace(['tx_demotemplate',"'title' => 'Example Theme'," , 'Demo Template'], ['tx_'.$varName, "'title' => '".$title."'," , $title], $str);
 
-                $str = str_replace("'title' => 'Example Theme',","'title' => '".$title."',",$str);
-
-                $str = str_replace("Demo Template",$title,$str);
+                $str = str_replace(['demotemplate'], [$extKey], $str);
 
                 file_put_contents($file, $str);
 
-                if (strpos($file, "demotemplate") !== false) {
-                    rename($file, str_replace("demotemplate", $varName, $file));
+                if (strpos($file, 'demotemplate') !== false) {
+                    rename($file, str_replace('demotemplate', $varName, $file));
                 }
             }
 
             /* neue Ext installieren */
-            $service->install($extName);
+            $service->install($extKey);
 
             /* In Datenbank ersetzen */
-            $changePagelayouts = $this->request->getArgument('pagelayouts');
+            $changePageLayouts = (int)$this->request->getArgument('pagelayouts');
 
-            if ($changePagelayouts == "1") {
+            if ($changePageLayouts === 1) {
                 $rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
                     'uid,tx_fed_page_controller_action,tx_fed_page_controller_action_sub',
                     'pages',
@@ -136,9 +133,9 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
                         'pages',
                         'uid=' . (int)$row['uid'],
                         [
-                            'tx_fed_page_controller_action' => str_replace("Demotemplate", ucfirst($extName),
+                            'tx_fed_page_controller_action' => str_replace('Demotemplate', $camelCase,
                                 $row['tx_fed_page_controller_action']),
-                            'tx_fed_page_controller_action_sub' => str_replace("Demotemplate", ucfirst($extName),
+                            'tx_fed_page_controller_action_sub' => str_replace('Demotemplate', $camelCase,
                                 $row['tx_fed_page_controller_action_sub'])
                         ]
                     );
@@ -155,7 +152,7 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
                         'sys_template',
                         'uid=' . (int)$row['uid'],
                         [
-                            'include_static_file' => str_replace("demotemplate", $extName,
+                            'include_static_file' => str_replace('demotemplate', $extKey,
                                 $row['include_static_file'])
                         ]
                     );
@@ -163,7 +160,7 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
             }
 
 
-            $message = "Die Extension ".$extName." wurde angelegt und aktiviert.";
+            $message = 'Die Extension '.$extKey.' wurde erfolgreich angelegt und aktiviert.';
 
         } catch (\Exception $ex) {
             $message = $ex->getMessage();
@@ -198,6 +195,7 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
      *
      * @param bool $tokenOnly Set it to TRUE to get only the token, otherwise including the &moduleToken= as prefix
      * @return string
+     * @throws \InvalidArgumentException
      */
     protected function getToken($tokenOnly = false)
     {
