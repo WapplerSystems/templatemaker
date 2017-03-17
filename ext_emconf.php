@@ -12,7 +12,7 @@
 
 $EM_CONF[$_EXTKEY] = array(
 	'title' => 'Template Maker',
-	'description' => '',
+	'description' => 'The template maker for the t3bootstrap.de project',
 	'category' => 'plugin',
 	'author' => 'Sven Wappler',
 	'author_email' => 'typo3@wappler.systems',
