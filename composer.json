@@ -1,0 +1,26 @@
+{
+	"name": "svewap/templatemaker",
+	"description": "",
+	"type": "typo3-cms-extension",
+	"license": "GPL-2.0+",
+	"authors": [
+		{
+			"name": "Sven Wappler",
+			"email": "typo3YYYY@wappler.systems",
+			"role": "Developer",
+			"homepage": "http://wappler.systems"
+		}
+	],
+	"replace": {
+		"templatemaker": "self.version",
+		"typo3-ter/templatemaker": "self.version"
+	},
+	"require": {
+		"typo3/cms-core": "7.6.2 - 8.7.99"
+	},
+	"autoload": {
+		"psr-4": {
+			"WapplerSystems\\Templatemaker\\": "Classes/"
+		}
+	}
+}
