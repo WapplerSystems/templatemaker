@@ -138,9 +138,9 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
                         'pages',
                         'uid=' . (int)$row['uid'],
                         [
-                            'tx_fed_page_controller_action' => str_replace('Demotemplate', $camelCase,
+                            'tx_fed_page_controller_action' => str_ireplace('Demotemplate', $camelCase,
                                 $row['tx_fed_page_controller_action']),
-                            'tx_fed_page_controller_action_sub' => str_replace('Demotemplate', $camelCase,
+                            'tx_fed_page_controller_action_sub' => str_ireplace('Demotemplate', $camelCase,
                                 $row['tx_fed_page_controller_action_sub'])
                         ]
                     );
