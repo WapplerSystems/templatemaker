@@ -162,6 +162,25 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
                         ]
                     );
                 }
+
+                /* tsconfig_includes */
+                $rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+                    'uid,tsconfig_includes',
+                    'pages',
+                    'tsconfig_includes LIKE "%demotemplate%"'
+                );
+
+                foreach ($rows as $row) {
+                    $GLOBALS['TYPO3_DB']->exec_UPDATEquery(
+                        'pages',
+                        'uid=' . (int)$row['uid'],
+                        [
+                            'tsconfig_includes' => str_replace('demotemplate', $extKey,
+                                $row['tsconfig_includes'])
+                        ]
+                    );
+                }
+
             }
 
 
