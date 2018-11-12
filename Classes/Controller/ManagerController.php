@@ -82,6 +82,7 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
 
             $extKey = trim($this->request->getArgument('key'));
 
+            /* not longer used */
             $camelCase = GeneralUtility::underscoredToUpperCamelCase($extKey);
 
             $varName = str_replace('_','',$extKey);
@@ -96,12 +97,10 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
             GeneralUtility::rmdir($extPath);
 
             if (!is_dir($extPath)) {
-                GeneralUtility::mkdir($extPath);
+                if (!GeneralUtility::mkdir($extPath)) {
+                    throw new Exception('Das Verzeichnis ' . $extPath . ' konnte nicht erstellt werden. Eventuell fehlende Berechtigung?');
+                }
                 GeneralUtility::copyDirectory(PATH_site . 'typo3conf/ext/demotemplate/', $extPath);
-            }
-
-            if (!is_dir($extPath)) {
-                throw new Exception('Verzeichnis ' . $extPath . ' konnte nicht erstellt werden.');
             }
 
             $files = GeneralUtility::getAllFilesAndFoldersInPath([], $extPath);
@@ -138,9 +137,9 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
                         'pages',
                         'uid=' . (int)$row['uid'],
                         [
-                            'tx_fed_page_controller_action' => str_ireplace('Demotemplate', $camelCase,
+                            'tx_fed_page_controller_action' => str_ireplace('Demotemplate', $extKey,
                                 $row['tx_fed_page_controller_action']),
-                            'tx_fed_page_controller_action_sub' => str_ireplace('Demotemplate', $camelCase,
+                            'tx_fed_page_controller_action_sub' => str_ireplace('Demotemplate', $extKey,
                                 $row['tx_fed_page_controller_action_sub'])
                         ]
                     );
