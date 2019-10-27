@@ -1,4 +1,5 @@
 <?php
+
 namespace WapplerSystems\Templatemaker\Controller;
 
 /*
@@ -15,13 +16,16 @@ namespace WapplerSystems\Templatemaker\Controller;
  */
 
 use TYPO3\CMS\Backend\Utility\BackendUtility as BackendUtilityCore;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\Exception;
 use TYPO3\CMS\Extensionmanager\Utility\InstallUtility;
 
 
-class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
+class ManagerController extends ActionController
 {
 
 
@@ -41,7 +45,6 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
     protected $tsConfiguration = [];
 
 
-
     /**
      * Function will be called before every other action
      *
@@ -55,8 +58,8 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
     }
 
 
-
-    public function introAction() {
+    public function introAction()
+    {
 
 
         $assignedValues = [
@@ -69,9 +72,8 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
 
     /**
      */
-    public function renameAction() {
-
-
+    public function renameAction()
+    {
 
         try {
 
@@ -85,7 +87,7 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
             /* not longer used */
             $camelCase = GeneralUtility::underscoredToUpperCamelCase($extKey);
 
-            $varName = str_replace('_','',$extKey);
+            $varName = str_replace('_', '', $extKey);
 
 
             if ($service->isLoaded($extKey)) {
@@ -108,7 +110,7 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
             foreach ($files as $file) {
 
                 $str = file_get_contents($file);
-                $str = str_replace(['tx_demotemplate',"'title' => 'Example Theme'," , 'Demo Template'], ['tx_'.$varName, "'title' => '".$title."'," , $title], $str);
+                $str = str_replace(['tx_demotemplate', "'title' => 'Example Theme',", 'Demo Template'], ['tx_' . $varName, "'title' => '" . $title . "',", $title], $str);
 
                 $str = str_replace(['demotemplate'], [$extKey], $str);
 
@@ -125,78 +127,91 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
             /* In Datenbank ersetzen */
             $changePageLayouts = (int)$this->request->getArgument('pagelayouts');
 
-            if ($changePageLayouts === 1) {
-                $rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-                    'uid,tx_fed_page_controller_action,tx_fed_page_controller_action_sub',
-                    'pages',
-                    'tx_fed_page_controller_action LIKE "%Demotemplate%" OR tx_fed_page_controller_action_sub LIKE "%Demotemplate%"'
-                );
+            /** @var ConnectionPool $connectionPool */
+            $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
 
-                foreach ($rows as $row) {
-                    $GLOBALS['TYPO3_DB']->exec_UPDATEquery(
+            if ($changePageLayouts === 1) {
+
+                /** @var QueryBuilder $queryBuilder */
+                $queryBuilder = $connectionPool->getQueryBuilderForTable('pages');
+                $statement = $queryBuilder->select('uid','tx_fed_page_controller_action','tx_fed_page_controller_action_sub')
+                    ->from('pages')
+                    ->where(
+                        $queryBuilder->expr()->orX(
+                            $queryBuilder->expr()->like('tx_fed_page_controller_action', $queryBuilder->createNamedParameter('%Demotemplate%', \PDO::PARAM_STR)),
+                            $queryBuilder->expr()->like('tx_fed_page_controller_action_sub', $queryBuilder->createNamedParameter('%Demotemplate%', \PDO::PARAM_STR))
+                        )
+                    )->execute();
+
+                $connection = $connectionPool->getConnectionForTable('pages');
+                while ($row = $statement->fetch()) {
+
+                    $connection->update(
                         'pages',
-                        'uid=' . (int)$row['uid'],
                         [
                             'tx_fed_page_controller_action' => str_ireplace('Demotemplate', $extKey,
                                 $row['tx_fed_page_controller_action']),
                             'tx_fed_page_controller_action_sub' => str_ireplace('Demotemplate', $extKey,
                                 $row['tx_fed_page_controller_action_sub'])
-                        ]
+                        ],
+                        ['uid' => (int)$row['uid']]
                     );
                 }
 
-                $rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-                    'uid,include_static_file',
-                    'sys_template',
-                    'include_static_file LIKE "%demotemplate%"'
-                );
 
-                foreach ($rows as $row) {
-                    $GLOBALS['TYPO3_DB']->exec_UPDATEquery(
+                /* include_static_file */
+                $queryBuilder = $connectionPool->getQueryBuilderForTable('sys_template');
+                $statement = $queryBuilder->select('uid','include_static_file')
+                    ->from('sys_template')
+                    ->where(
+                        $queryBuilder->expr()->like('include_static_file', $queryBuilder->createNamedParameter('%demotemplate%', \PDO::PARAM_STR))
+                    )->execute();
+
+                $connection = $connectionPool->getConnectionForTable('sys_template');
+                while ($row = $statement->fetch()) {
+                    $connection->update(
                         'sys_template',
-                        'uid=' . (int)$row['uid'],
                         [
                             'include_static_file' => str_replace('demotemplate', $extKey,
                                 $row['include_static_file'])
-                        ]
+                        ],
+                        ['uid' => (int)$row['uid']]
                     );
                 }
 
                 /* tsconfig_includes */
-                $rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-                    'uid,tsconfig_includes',
-                    'pages',
-                    'tsconfig_includes LIKE "%demotemplate%"'
-                );
+                $queryBuilder = $connectionPool->getQueryBuilderForTable('pages');
+                $statement = $queryBuilder->select('uid','tsconfig_includes')
+                    ->from('pages')
+                    ->where(
+                        $queryBuilder->expr()->like('tsconfig_includes', $queryBuilder->createNamedParameter('%demotemplate%', \PDO::PARAM_STR))
+                    )->execute();
 
-                foreach ($rows as $row) {
-                    $GLOBALS['TYPO3_DB']->exec_UPDATEquery(
+                $connection = $connectionPool->getConnectionForTable('pages');
+                while ($row = $statement->fetch()) {
+                    $connection->update(
                         'pages',
-                        'uid=' . (int)$row['uid'],
                         [
                             'tsconfig_includes' => str_replace('demotemplate', $extKey,
                                 $row['tsconfig_includes'])
-                        ]
+                        ],
+                        ['uid' => (int)$row['uid']]
                     );
                 }
 
             }
 
-
-            $message = 'Die Extension '.$extKey.' wurde erfolgreich angelegt und aktiviert.';
+            $message = 'Die Extension ' . $extKey . ' wurde erfolgreich angelegt und aktiviert.';
 
         } catch (\Exception $ex) {
             $message = $ex->getMessage();
         }
-
-
 
         $assignedValues = [
             'message' => $message,
         ];
         $this->view->assignMultiple($assignedValues);
     }
-
 
 
     /**
@@ -225,9 +240,8 @@ class ManagerController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
         $token = FormProtectionFactory::get()->generateToken('moduleCall', 'tools_TemplatemakerTxTemplatemakerM1');
         if ($tokenOnly) {
             return $token;
-        } else {
-            return '&moduleToken=' . $token;
         }
+        return '&moduleToken=' . $token;
     }
 
 

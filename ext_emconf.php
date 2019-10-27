@@ -10,7 +10,7 @@
  * "version" and "dependencies" must not be touched!
  ***************************************************************/
 
-$EM_CONF[$_EXTKEY] = array(
+$EM_CONF[$_EXTKEY] = [
 	'title' => 'Template Maker',
 	'description' => 'The template maker tool for the t3bootstrap.de project. You will need the t3bootstrap template.',
 	'category' => 'plugin',
@@ -21,15 +21,15 @@ $EM_CONF[$_EXTKEY] = array(
 	'uploadfolder' => '0',
 	'createDirs' => '',
 	'clearCacheOnLoad' => 0,
-	'version' => '1.1.0',
-	'constraints' => array(
-		'depends' => array(
-			'typo3' => '8.7.0-9.5.99',
+	'version' => '1.2.0',
+	'constraints' => [
+		'depends' => [
+			'typo3' => '8.7.0-10.4.99',
             'demotemplate' => '',
-		),
-		'conflicts' => array(
-		),
-		'suggests' => array(
-		),
-	),
-);
+        ],
+		'conflicts' => [
+        ],
+		'suggests' => [
+        ],
+    ],
+];
