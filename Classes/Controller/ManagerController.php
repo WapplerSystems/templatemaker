@@ -19,6 +19,7 @@ use TYPO3\CMS\Backend\Utility\BackendUtility as BackendUtilityCore;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\Exception;
@@ -132,30 +133,32 @@ class ManagerController extends ActionController
 
             if ($changePageLayouts === 1) {
 
-                /** @var QueryBuilder $queryBuilder */
-                $queryBuilder = $connectionPool->getQueryBuilderForTable('pages');
-                $statement = $queryBuilder->select('uid','tx_fed_page_controller_action','tx_fed_page_controller_action_sub')
-                    ->from('pages')
-                    ->where(
-                        $queryBuilder->expr()->orX(
-                            $queryBuilder->expr()->like('tx_fed_page_controller_action', $queryBuilder->createNamedParameter('%Demotemplate%', \PDO::PARAM_STR)),
-                            $queryBuilder->expr()->like('tx_fed_page_controller_action_sub', $queryBuilder->createNamedParameter('%Demotemplate%', \PDO::PARAM_STR))
-                        )
-                    )->execute();
+                if (ExtensionManagementUtility::isLoaded('fluidpages')) {
+                    /** @var QueryBuilder $queryBuilder */
+                    $queryBuilder = $connectionPool->getQueryBuilderForTable('pages');
+                    $statement = $queryBuilder->select('uid', 'tx_fed_page_controller_action', 'tx_fed_page_controller_action_sub')
+                        ->from('pages')
+                        ->where(
+                            $queryBuilder->expr()->orX(
+                                $queryBuilder->expr()->like('tx_fed_page_controller_action', $queryBuilder->createNamedParameter('%Demotemplate%', \PDO::PARAM_STR)),
+                                $queryBuilder->expr()->like('tx_fed_page_controller_action_sub', $queryBuilder->createNamedParameter('%Demotemplate%', \PDO::PARAM_STR))
+                            )
+                        )->execute();
 
-                $connection = $connectionPool->getConnectionForTable('pages');
-                while ($row = $statement->fetch()) {
+                    $connection = $connectionPool->getConnectionForTable('pages');
+                    while ($row = $statement->fetch()) {
 
-                    $connection->update(
-                        'pages',
-                        [
-                            'tx_fed_page_controller_action' => str_ireplace('Demotemplate', $extKey,
-                                $row['tx_fed_page_controller_action']),
-                            'tx_fed_page_controller_action_sub' => str_ireplace('Demotemplate', $extKey,
-                                $row['tx_fed_page_controller_action_sub'])
-                        ],
-                        ['uid' => (int)$row['uid']]
-                    );
+                        $connection->update(
+                            'pages',
+                            [
+                                'tx_fed_page_controller_action' => str_ireplace('Demotemplate', $extKey,
+                                    $row['tx_fed_page_controller_action']),
+                                'tx_fed_page_controller_action_sub' => str_ireplace('Demotemplate', $extKey,
+                                    $row['tx_fed_page_controller_action_sub'])
+                            ],
+                            ['uid' => (int)$row['uid']]
+                        );
+                    }
                 }
 
 
