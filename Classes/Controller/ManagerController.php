@@ -95,7 +95,7 @@ class ManagerController extends ActionController
                 throw new Exception('Die Extension ' . $extKey . ' existiert bereits und ist geladen.');
             }
 
-            $extPath = PATH_site . 'typo3conf/ext/' . $extKey . '/';
+            $extPath = \TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3conf/ext/' . $extKey . '/';
 
             GeneralUtility::rmdir($extPath);
 
@@ -103,7 +103,7 @@ class ManagerController extends ActionController
                 if (!GeneralUtility::mkdir($extPath)) {
                     throw new Exception('Das Verzeichnis ' . $extPath . ' konnte nicht erstellt werden. Eventuell fehlende Berechtigung?');
                 }
-                GeneralUtility::copyDirectory(PATH_site . 'typo3conf/ext/demotemplate/', $extPath);
+                GeneralUtility::copyDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3conf/ext/demotemplate/', $extPath);
             }
 
             $files = GeneralUtility::getAllFilesAndFoldersInPath([], $extPath);
