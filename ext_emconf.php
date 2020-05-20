@@ -11,25 +11,25 @@
  ***************************************************************/
 
 $EM_CONF[$_EXTKEY] = [
-	'title' => 'Template Maker',
-	'description' => 'The template maker tool for the t3bootstrap.de project. You will need the t3bootstrap template.',
-	'category' => 'plugin',
-	'author' => 'Sven Wappler',
-	'author_email' => 'typo3YYYY@wappler.systems',
-	'state' => 'stable',
-	'internal' => '',
-	'uploadfolder' => '0',
-	'createDirs' => '',
-	'clearCacheOnLoad' => 0,
-	'version' => '1.2.2',
-	'constraints' => [
-		'depends' => [
-			'typo3' => '8.7.0-10.4.99',
+    'title' => 'Template Maker',
+    'description' => 'The template maker tool for the t3bootstrap.de project. You will need the t3bootstrap template.',
+    'category' => 'plugin',
+    'author' => 'Sven Wappler',
+    'author_email' => 'typo3YYYY@wappler.systems',
+    'state' => 'stable',
+    'internal' => '',
+    'uploadfolder' => '0',
+    'createDirs' => '',
+    'clearCacheOnLoad' => 0,
+    'version' => '1.2.2',
+    'constraints' => [
+        'depends' => [
+            'typo3' => '9.5.0-10.4.99',
             'demotemplate' => '',
         ],
-		'conflicts' => [
+        'conflicts' => [
         ],
-		'suggests' => [
+        'suggests' => [
         ],
     ],
 ];

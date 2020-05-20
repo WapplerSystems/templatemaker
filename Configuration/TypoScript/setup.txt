@@ -1,12 +1,12 @@
-
- # Module configuration
+# Module configuration
 module.tx_templatemaker_ba1 {
-	persistence {
-		storagePid = {$module.tx_templatemaker_ba1.persistence.storagePid}
-	}
-	view {
-		templateRootPath = {$module.tx_templatemaker_ba1.view.templateRootPath}
-		partialRootPath = {$module.tx_templatemaker_ba1.view.partialRootPath}
-		layoutRootPath = {$module.tx_templatemaker_ba1.view.layoutRootPath}
-	}
+    persistence {
+        storagePid = {$module.tx_templatemaker_ba1.persistence.storagePid}
+    }
+
+    view {
+        templateRootPath = {$module.tx_templatemaker_ba1.view.templateRootPath}
+        partialRootPath = {$module.tx_templatemaker_ba1.view.partialRootPath}
+        layoutRootPath = {$module.tx_templatemaker_ba1.view.layoutRootPath}
+    }
 }

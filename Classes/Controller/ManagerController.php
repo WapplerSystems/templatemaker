@@ -164,7 +164,7 @@ class ManagerController extends ActionController
 
                 /* include_static_file */
                 $queryBuilder = $connectionPool->getQueryBuilderForTable('sys_template');
-                $statement = $queryBuilder->select('uid','include_static_file')
+                $statement = $queryBuilder->select('uid', 'include_static_file')
                     ->from('sys_template')
                     ->where(
                         $queryBuilder->expr()->like('include_static_file', $queryBuilder->createNamedParameter('%demotemplate%', \PDO::PARAM_STR))
@@ -184,7 +184,7 @@ class ManagerController extends ActionController
 
                 /* tsconfig_includes */
                 $queryBuilder = $connectionPool->getQueryBuilderForTable('pages');
-                $statement = $queryBuilder->select('uid','tsconfig_includes')
+                $statement = $queryBuilder->select('uid', 'tsconfig_includes')
                     ->from('pages')
                     ->where(
                         $queryBuilder->expr()->like('tsconfig_includes', $queryBuilder->createNamedParameter('%demotemplate%', \PDO::PARAM_STR))
