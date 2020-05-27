@@ -134,7 +134,6 @@ class ManagerController extends ActionController
             if ($changePageLayouts === 1) {
 
                 if (ExtensionManagementUtility::isLoaded('fluidpages')) {
-                    /** @var QueryBuilder $queryBuilder */
                     $queryBuilder = $connectionPool->getQueryBuilderForTable('pages');
                     $statement = $queryBuilder->select('uid', 'tx_fed_page_controller_action', 'tx_fed_page_controller_action_sub')
                         ->from('pages')
