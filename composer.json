@@ -18,5 +18,10 @@
 		"psr-4": {
 			"WapplerSystems\\Templatemaker\\": "Classes/"
 		}
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "templatemaker"
+		}
 	}
 }
