@@ -16,8 +16,8 @@ namespace WapplerSystems\Templatemaker\Controller;
  */
 
 use TYPO3\CMS\Backend\Utility\BackendUtility as BackendUtilityCore;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\FormProtection\FormProtectionFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -62,10 +62,10 @@ class ManagerController extends ActionController
     public function introAction()
     {
 
-
         $assignedValues = [
             'moduleToken' => $this->getToken(true),
             'page' => $this->pageUid,
+            'isComposerMode' => Environment::isComposerMode(),
         ];
         $this->view->assignMultiple($assignedValues);
     }
@@ -79,7 +79,7 @@ class ManagerController extends ActionController
         try {
 
             /** @var InstallUtility $service */
-            $service = $this->objectManager->get(InstallUtility::class);
+            $service = GeneralUtility::makeInstance(InstallUtility::class);
 
             $title = $this->request->getArgument('title');
 
@@ -90,12 +90,17 @@ class ManagerController extends ActionController
 
             $varName = str_replace('_', '', $extKey);
 
-
-            if ($service->isLoaded($extKey)) {
-                throw new Exception('Die Extension ' . $extKey . ' existiert bereits und ist geladen.');
+            if (version_compare(TYPO3_version, '11.0.0', '>=')){
+                if ($service->isAvailable($extKey)) {
+                    throw new Exception('Die Extension ' . $extKey . ' existiert bereits und ist geladen.');
+                }
+            } else {
+                if ($service->isLoaded($extKey)) {
+                    throw new Exception('Die Extension ' . $extKey . ' existiert bereits und ist geladen.');
+                }
             }
 
-            $extPath = \TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3conf/ext/' . $extKey . '/';
+            $extPath = Environment::getPublicPath() . '/typo3conf/ext/' . $extKey . '/';
 
             GeneralUtility::rmdir($extPath);
 
@@ -103,7 +108,10 @@ class ManagerController extends ActionController
                 if (!GeneralUtility::mkdir($extPath)) {
                     throw new Exception('Das Verzeichnis ' . $extPath . ' konnte nicht erstellt werden. Eventuell fehlende Berechtigung?');
                 }
-                GeneralUtility::copyDirectory(\TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/typo3conf/ext/demotemplate/', $extPath);
+                GeneralUtility::copyDirectory(Environment::getPublicPath() . '/typo3conf/ext/demotemplate/', $extPath);
+                if (is_dir($extPath.'.git/')) {
+                    GeneralUtility::rmdir($extPath . '.git/',true);
+                }
             }
 
             $files = GeneralUtility::getAllFilesAndFoldersInPath([], $extPath);
@@ -122,10 +130,12 @@ class ManagerController extends ActionController
                 }
             }
 
-            /* neue Ext installieren */
-            $service->install($extKey);
+            if (!Environment::isComposerMode()) {
+                /* neue Ext installieren */
+                $service->install($extKey);
+            }
 
-            /* In Datenbank ersetzen */
+            /* In Datenbank ersetzen ? */
             $changePageLayouts = (int)$this->request->getArgument('pagelayouts');
 
             /** @var ConnectionPool $connectionPool */
@@ -203,7 +213,10 @@ class ManagerController extends ActionController
 
             }
 
-            $message = 'Die Extension ' . $extKey . ' wurde erfolgreich angelegt und aktiviert.';
+            $message = 'Die Extension ' . $extKey . ' wurde erfolgreich angelegt';
+            if (!Environment::isComposerMode()) {
+                $message .= ' und aktiviert.';
+            }
 
         } catch (\Exception $ex) {
             $message = $ex->getMessage();

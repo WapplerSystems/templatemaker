@@ -8,6 +8,9 @@
 	</h1>
 	<p>Geben Sie den Namen Ihrer gewünschten Template-Extension ein.<br />
 		Es wird die demotemplate-Extension kopiert und umbenannt.<br /></p>
+	<f:if condition="{isComposerMode}">
+		<p class="alert alert-info">Das System befindet sich im Composer-Modus. Die Extension wird nicht installiert und muss manuell bei GIT eingecheckt werden.</p>
+	</f:if>
 
 	<f:form method="post" action="rename">
 		<input type="hidden" name="M" value="tools_TemplatemakerTxTemplatemakerM1">
