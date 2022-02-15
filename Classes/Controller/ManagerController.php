@@ -130,10 +130,6 @@ class ManagerController extends ActionController
                 }
             }
 
-            if (!Environment::isComposerMode()) {
-                /* neue Ext installieren */
-                $service->install($extKey);
-            }
 
             /* In Datenbank ersetzen ? */
             $changePageLayouts = (int)$this->request->getArgument('pagelayouts');
@@ -142,34 +138,6 @@ class ManagerController extends ActionController
             $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
 
             if ($changePageLayouts === 1) {
-
-                if (ExtensionManagementUtility::isLoaded('fluidpages')) {
-                    $queryBuilder = $connectionPool->getQueryBuilderForTable('pages');
-                    $statement = $queryBuilder->select('uid', 'tx_fed_page_controller_action', 'tx_fed_page_controller_action_sub')
-                        ->from('pages')
-                        ->where(
-                            $queryBuilder->expr()->orX(
-                                $queryBuilder->expr()->like('tx_fed_page_controller_action', $queryBuilder->createNamedParameter('%Demotemplate%', \PDO::PARAM_STR)),
-                                $queryBuilder->expr()->like('tx_fed_page_controller_action_sub', $queryBuilder->createNamedParameter('%Demotemplate%', \PDO::PARAM_STR))
-                            )
-                        )->execute();
-
-                    $connection = $connectionPool->getConnectionForTable('pages');
-                    while ($row = $statement->fetch()) {
-
-                        $connection->update(
-                            'pages',
-                            [
-                                'tx_fed_page_controller_action' => str_ireplace('Demotemplate', $extKey,
-                                    $row['tx_fed_page_controller_action']),
-                                'tx_fed_page_controller_action_sub' => str_ireplace('Demotemplate', $extKey,
-                                    $row['tx_fed_page_controller_action_sub'])
-                            ],
-                            ['uid' => (int)$row['uid']]
-                        );
-                    }
-                }
-
 
                 /* include_static_file */
                 $queryBuilder = $connectionPool->getQueryBuilderForTable('sys_template');
@@ -210,13 +178,9 @@ class ManagerController extends ActionController
                         ['uid' => (int)$row['uid']]
                     );
                 }
-
             }
 
-            $message = 'Die Extension ' . $extKey . ' wurde erfolgreich angelegt';
-            if (!Environment::isComposerMode()) {
-                $message .= ' und aktiviert.';
-            }
+            $message = 'Die Extension ' . $extKey . ' wurde erfolgreich angelegt. Bitte installieren Sie diese.';
 
         } catch (\Exception $ex) {
             $message = $ex->getMessage();
